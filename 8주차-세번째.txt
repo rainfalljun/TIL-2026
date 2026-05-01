@@ -1,0 +1,61 @@
+# AWS Auto Scaling 요약
+
+---
+
+## 1. 스케일링(Scaling)이란?
+애플리케이션 성능을 높이기 위해 컴퓨팅 리소스를 확장하거나 축소하는 것
+
+---
+
+## 2. 스케일 업 (Scale-Up / Vertical Scaling)
+- 서버 한 대의 성능을 높이는 방식
+- 장점 : 단순하고 설정이 쉬움
+- 단점 : 물리적 한계 존재 / 재시작 필요 / 단일 장애점 위험
+
+---
+
+## 3. 스케일 아웃 (Scale-Out / Horizontal Scaling)
+- 서버를 여러 대로 늘려 처리 성능을 확장하는 방식
+- 장점 : 무중단 확장 가능
+- 단점 : 복잡한 아키텍처 / Load Balancer(ELB) 등 추가 구성 필요
+
+---
+
+## 4. Auto Scaling
+트래픽 상황에 맞춰 서버 수를 자동으로 늘리거나 줄여주는 AWS 서비스
+- 트래픽 증가 시 인스턴스 자동 증가
+- 사용량 감소 시 인스턴스 자동 축소
+- 리소스 비용 절감 + 고가용성 유지
+
+---
+
+## 5. Auto Scaling 구성 요소
+
+| 구성요소 | 설명 |
+|---|---|
+| Launch Template | 새 인스턴스 생성 시 필요한 설정 (AMI, 인스턴스 타입, 키페어, 보안그룹, UserData 등) |
+| Auto Scaling Group (ASG) | 인스턴스를 묶어 관리하는 단위. 최소/최대/원하는 수 설정 및 자동 조절 |
+| Scaling Policy | 언제, 어떻게 서버 수를 조절할지 규칙 설정 |
+| CloudWatch | 지표 감시 후 Scaling Policy 트리거 역할 |
+
+---
+
+## 6. Scaling Policy 종류
+- **Target Tracking** : 평균 CPU 60% 유지처럼 목표값 설정
+- **Step Scaling** : CPU 구간별 증감 대수 설정 (예: 70~80% → +1대)
+- **Scheduled Scaling** : 특정 시간에 자동 확장 (예: 매일 오후 6시)
+
+---
+
+## 7. ASG 용량 설정 규칙
+- 최소 용량 ≤ 원하는 용량(Desired) ≤ 최대 용량
+- Desired : 현재 운영할 인스턴스 수
+- Min : 줄어들 수 있는 하한선
+- Max : 늘어날 수 있는 상한선
+
+---
+
+## 8. 실습 요약
+- **실습 1** : Launch Template 생성 후 ASG 생성 → EC2 자동 생성 확인
+- **실습 2** : CPU 부하(stress 명령어)를 주면 인스턴스 자동 증가, 부하 해소 시 자동 감소
+- **실습 3** : 특정 시간(Scheduled Scaling)에 인스턴스 자동 증가 확인
