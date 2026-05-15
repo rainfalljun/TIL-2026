@@ -1,0 +1,52 @@
+========================================
+프로젝트 기본 개발환경 요약 (1/2)
+- 개발 환경 설치 및 프로젝트 생성 -
+========================================
+
+[ 1. VSCode 설치 ]
+- 다운로드 URL: https://code.visualstudio.com/download
+- Windows의 경우 System Installer (x64) 권장
+
+[ 2. JDK 설치 ]
+- Amazon Corretto 25 사용
+- 다운로드 URL: https://docs.aws.amazon.com/corretto/latest/corretto-25-ug/downloads-list.html
+- Windows x64: corretto-25-x64-windows-jdk.msi
+
+[ 3. VSCode 확장(Extension) 설치 ]
+① Spring Boot Extension Pack
+   - 확장 탭 → "spring boot" 검색
+   - Spring Boot Extension Pack (VMware) → Install
+   - 포함 구성요소: Spring Boot Tools, Spring Initializr Java Support, Spring Boot Dashboard
+
+② Extension Pack for Java
+   - 확장 탭 → "java" 검색
+   - Extension Pack for Java (Microsoft) → Install
+   - 포함 구성요소: Language Support for Java, Debugger for Java,
+     Maven for Java, Gradle for Java, Test Runner for Java, Project Manager for Java
+
+[ 4. Spring Boot 프로젝트 생성 순서 ]
+① Ctrl + Shift + P → "Spring Ini" 입력
+   → Spring Initializr: Create Maven Project... 선택
+
+② 설정 항목 순서대로 입력:
+   - Spring Boot Version : 3.5.13
+   - Project Language    : Java
+   - Group Id           : comp.soft
+   - Artifact Id        : project
+   - Package Name       : comp.soft.project
+   - Packaging Type     : Jar
+   - Java Version       : 25
+   - Dependencies       : Spring Web, Spring Data JDBC, WebSocket
+
+③ project 디렉토리 생성 → 선택 → Generate into this folder
+④ 생성 완료 후 VSCode 재시작
+
+[ 5. 생성 결과 주요 파일 ]
+- src/main/java/comp/soft/project/ProjectApplication.java  (메인 클래스)
+- src/main/resources/application.properties               (설정 파일)
+- pom.xml                                                  (의존성 관리)
+
+[ 6. Spring Boot App 실행 ]
+① pom.xml에서 spring-boot-starter-data-jdbc 의존성 주석 처리 후 저장
+② Spring Boot Dashboard에서 서버 실행 (▶ 버튼)
+③ 브라우저에서 http://localhost:8080 접속하여 확인
