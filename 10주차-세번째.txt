@@ -1,0 +1,109 @@
+========================================
+프로젝트 기본 개발환경 요약 (2/2)
+- 데이터 통신 및 DB 연결 -
+========================================
+
+[ 1. 기본 통신 흐름 ]
+Browser  →  (URL 호출)         →  Spring Boot App
+Browser  ←  (index.html 반환)  ←  Spring Boot App
+         [화면 출력]
+
+Browser  →  (Send 버튼 클릭 / POST /demo/post)  →  DemoController.post()
+Browser  ←  ([{"name":"홍길동","division":"IT소프트웨어과"}] 반환)
+
+[ 2. 데이터 통신 구조 (Front - Back - DB) ]
+Browser  →  (URL 요청)         →  App Server
+Browser  ←  (html/css/js 반환) ←  App Server
+
+Browser  →  (XHR/fetch/WebSocket 요청)  →  App Server  →  (SQL)  →  Database
+Browser  ←  (application/json 응답)     ←  App Server  ←  (ResultSet)
+
+[ 3. DemoController.java 예제 ]
+-------------------------------------------
+package comp.soft.project.controller;
+
+@RestController
+@RequestMapping("/demo")
+public class DemoController {
+
+    @PostMapping("/post")
+    public List<Map<String, String>> post(
+            @RequestParam("name") String name,
+            @RequestParam("age") String age) {
+
+        System.out.println("name: " + name + ", age: " + age);
+
+        List<Map<String, String>> res = new ArrayList<>();
+        Map<String, String> data = new HashMap<>();
+        data.put("name", "홍길동");
+        data.put("division", "IT소프트웨어과");
+        res.add(data);
+        res.add(data);
+        return res;
+    }
+}
+-------------------------------------------
+
+[ 4. index.html 예제 ]
+-------------------------------------------
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    function doSend() {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/demo/post");
+      xhr.setRequestHeader("Content-Type",
+          "application/x-www-form-urlencoded");
+
+      xhr.onload = (e) => {
+        var jsonTxt = xhr.responseText;
+        var jsonObj = JSON.parse(jsonTxt);
+
+        var info = document.getElementById("info");
+        var nameP = document.createElement("p");
+        nameP.innerText = "이름: " + jsonObj[0]["name"];
+        info.appendChild(nameP);
+
+        var divP = document.createElement("p");
+        divP.innerText = "학과: " + jsonObj[0]["division"];
+        info.appendChild(divP);
+      };
+
+      xhr.send("name=Hongildong&age=23");
+    }
+  </script>
+</head>
+<body>
+  <button onclick="doSend()">Send</button>
+  <div id="info"></div>
+</body>
+</html>
+-------------------------------------------
+
+[ 5. 데이터베이스 연결 설정 ]
+
+① application.properties 설정
+   spring.datasource.url=jdbcUrl
+   spring.datasource.driverClassName=driverClassName
+   spring.datasource.username=userName
+   spring.datasource.password=password
+
+② pom.xml - spring-boot-starter-data-jdbc 주석 해제
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-data-jdbc</artifactId>
+   </dependency>
+
+③ JdbcTemplate을 이용한 Repository 구현 예시
+   @Repository
+   public class BookRepository {
+       @Autowired
+       private JdbcTemplate template;
+
+       public List<Book> getAllBookList() {
+           String sql = "SELECT b_bookId, b_name, ... FROM book";
+           return this.template.query(sql, new BookRowMapper());
+       }
+   }
