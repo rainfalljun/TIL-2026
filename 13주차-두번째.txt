@@ -1,0 +1,261 @@
+========================================
+  인터셉터와 로깅 요약 정리
+  웹자바프로그래밍 응용
+========================================
+
+────────────────────────────────────────
+1. 로깅 (Logging)
+────────────────────────────────────────
+
+■ Log4j2 개요
+  - 산업용 Java 로깅 프레임워크
+  - Apache Software Foundation에서 관리
+  - Log4j 1.x는 2015년 8월 지원 종료 → Log4j2 사용 권고
+
+■ Log4j2 주요 구성 요소
+  ┌──────────┬────────────────────────────────────────────────────────┐
+  │ 요소     │ 설명                                                   │
+  ├──────────┼────────────────────────────────────────────────────────┤
+  │ Logger   │ 로깅을 위한 기본 사용자 진입점                         │
+  │ Filter   │ 로그 이벤트를 평가하여 파이프라인 처리 여부를 결정     │
+  │ Appender │ 콘솔, 파일, DB 등 특정 대상에 LogEvent를 전달         │
+  │ Layout   │ LogEvent를 출력 대상에 맞는 형태로 변환                │
+  └──────────┴────────────────────────────────────────────────────────┘
+
+■ Log4j2 Appender 종류
+  - Console Appender
+  - File Appender
+  - Database Appender
+  - Network Appender
+  - Message Queue Appender
+  - Servlet Appender
+  - Delegating Appender
+
+■ Log4j2 설정 파일 위치
+  - src/main/resources/log4j2.xml
+  - Classpath에 log4j2.xml 생성 시 자동 적용 (별도 활성화 불필요)
+
+■ log4j2.xml 기본 설정 예시
+  <?xml version="1.0" encoding="UTF-8"?>
+  <Configuration>
+    <Appenders>
+      <Console name="console">
+        <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{-10}:%L - %m%n"/>
+      </Console>
+    </Appenders>
+    <Loggers>
+      <Root level="INFO" additivity="false">
+        <AppenderRef ref="console"/>
+      </Root>
+      <Logger name="com.springmvc" level="DEBUG"/>
+      <Logger name="org.springframework.web" level="DEBUG"/>
+    </Loggers>
+  </Configuration>
+
+────────────────────────────────────────
+2. SLF4J를 이용한 로깅
+────────────────────────────────────────
+
+■ SLF4J (Simple Logging Facade for Java) 개요
+  - 다양한 로깅 프레임워크(java.util.logging, Logback, Log4j)에 대한
+    추상화(퍼사드) 역할
+  - 배포 시점에 원하는 로깅 프레임워크를 선택적으로 플러그인 가능
+  - Spring에서 기본 로깅 API로 사용
+
+■ SLF4J 로깅 레벨 (낮음 → 높음 순)
+  ┌─────────┬──────────────────────────────────────────────────────┐
+  │ 레벨    │ 설명                                                 │
+  ├─────────┼──────────────────────────────────────────────────────┤
+  │ TRACE   │ 처리 흐름을 추적하는 메시지                          │
+  │ DEBUG   │ 디버그용, 시스템 흐름의 자세한 정보                  │
+  │ INFO    │ 시작/종료 같은 런타임 이벤트 메시지                  │
+  │ WARN    │ 바람직하지 않은 런타임 상황에 대한 경고              │
+  │ ERROR   │ 런타임 오류 또는 예기치 않은 상태                    │
+  └─────────┴──────────────────────────────────────────────────────┘
+  ※ 설정한 레벨 이상의 로그만 출력됨
+
+■ SLF4J 사용 예시
+  import org.slf4j.Logger;
+  import org.slf4j.LoggerFactory;
+
+  public class WelcomeController {
+      private final Logger log = LoggerFactory.getLogger(WelcomeController.class);
+
+      public String welcome(Model model) {
+          this.log.trace("Trace 메시지");
+          this.log.debug("Debug 메시지");
+          this.log.info("Info 메시지");
+          this.log.warn("Warn 메시지");
+          this.log.error("Error 메시지");
+          return "welcome";
+      }
+  }
+
+────────────────────────────────────────
+3. RollingFile Appender
+────────────────────────────────────────
+
+■ 개요
+  - 로그를 파일에 저장하고, 기준(크기/시간)에 따라 파일을 분리하는 Appender
+
+■ 주요 속성
+  ┌──────────────────────┬─────────────────────────────────────────────┐
+  │ 속성                 │ 설명                                        │
+  ├──────────────────────┼─────────────────────────────────────────────┤
+  │ filePattern (필수)   │ 보관되는 로그 파일 이름의 패턴              │
+  │ name (필수)          │ Appender의 이름                             │
+  │ fileName             │ 현재 로그 파일 경로 (없으면 폴더 자동 생성) │
+  │ bufferedIo           │ 로그 이벤트를 버퍼에 저장 후 전송 여부      │
+  │ immediateFlush       │ 각 이벤트 후 내부 버퍼 즉시 플러시 여부     │
+  └──────────────────────┴─────────────────────────────────────────────┘
+
+■ Policies (롤오버 시점 결정)
+  - SizeBasedTriggeringPolicy : 파일이 지정 크기에 도달하면 롤오버
+  - TimeBasedTriggeringPolicy : filePattern의 최소 시간 단위 변경 시 롤오버
+
+■ 설정 예시
+  <RollingFile name="monitor" fileName="C:/logs/monitor.log"
+               filePattern="C:/logs/monitor.%d{yyyy-MM-dd-hh-mm}.log">
+    <LevelRangeFilter minLevel="DEBUG" maxLevel="DEBUG"/>
+    <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{-10}:%L - %m%n"/>
+    <Policies>
+      <SizeBasedTriggeringPolicy size="10KB"/>
+      <TimeBasedTriggeringPolicy interval="1"/>
+    </Policies>
+  </RollingFile>
+
+────────────────────────────────────────
+4. 인터셉터 (Interceptor)
+────────────────────────────────────────
+
+■ 개요
+  - URL 요청 시 컨트롤러 메소드 호출 전/후에 처리 흐름을 가로채
+    특정 작업을 처리할 수 있는 기능
+
+■ HandlerInterceptor 인터페이스
+  - HttpServletRequest, HttpServletResponse를 가로채 특별한 로직 처리
+
+■ 주요 사용 예
+  - 응답 페이지 출력 전 데이터 미리 가져오기 (spooling)
+  - 폼 중복 제출 차단
+  - 요청 처리 전 파일 업로드 (multipart)
+  - 요청 상세 내역 기록 (logging)
+  - 유효성 검사 (validation)
+  - 성능 병목 검사 (profiling)
+
+■ HandlerInterceptor 메소드 3가지
+  ┌───────────────────┬──────────────────────────────────────────────────────┐
+  │ 메소드            │ 설명                                                 │
+  ├───────────────────┼──────────────────────────────────────────────────────┤
+  │ preHandle()       │ 핸들러(컨트롤러) 실행 전 호출                        │
+  │                   │ true 반환 시 다음 인터셉터 또는 핸들러 실행          │
+  ├───────────────────┼──────────────────────────────────────────────────────┤
+  │ postHandle()      │ 핸들러 실행 후, View 렌더링 전 호출                  │
+  │                   │ ModelAndView를 통해 뷰에 추가 모델 객체 노출 가능    │
+  ├───────────────────┼──────────────────────────────────────────────────────┤
+  │ afterCompletion() │ View 렌더링 완료 후 호출                              │
+  │                   │ 모든 결과에 대해 호출되어 리소스 정리에 적합          │
+  └───────────────────┴──────────────────────────────────────────────────────┘
+
+■ 인터셉터 생성 방법
+  - HandlerInterceptor 인터페이스를 직접 구현 (권장)
+  - ※ HandlerInterceptorAdapter는 Spring 5.3에서 Deprecated,
+       Spring 6.x에서 완전히 제거됨 → 사용 금지
+
+■ 인터셉터 등록 (servlet-context.xml)
+
+  <!-- 모든 URL에 적용 -->
+  <interceptors>
+    <beans:bean class="com.springmvc.interceptor.MonitoringInterceptor"/>
+  </interceptors>
+
+  <!-- 특정 URL에만 적용 -->
+  <interceptors>
+    <interceptor>
+      <mapping path="/books/**"/>
+      <beans:bean class="com.springmvc.interceptor.MonitoringInterceptor"/>
+    </interceptor>
+  </interceptors>
+
+────────────────────────────────────────
+5. AsyncHandlerInterceptor
+────────────────────────────────────────
+
+■ 개요
+  - HandlerInterceptor를 확장한 인터페이스
+  - 비동기 요청 처리가 시작된 후 호출되는 콜백 메서드 제공
+
+■ 동기 vs 비동기 처리
+  - 동기: 처리 완료 전까지 스레드 대기 → 오래 걸리는 요청이 많으면
+          모든 스레드가 점유되어 장애 유발 가능
+  - 비동기: 처리 중 스레드를 풀에 반환 → 다른 요청 처리 가능
+            처리 완료 후 스레드를 재할당받아 클라이언트에 응답
+
+■ 비동기 처리 시 인터셉터 동작 차이
+  - 비동기 요청 시작 시 postHandle, afterCompletion은 호출되지 않음
+  - 대신 afterConcurrentHandlingStarted() 가 호출됨
+
+■ AsyncHandlerInterceptor 인터페이스
+  public interface AsyncHandlerInterceptor extends HandlerInterceptor {
+      default void afterConcurrentHandlingStarted(
+          HttpServletRequest request, HttpServletResponse response, Object handler) {}
+  }
+
+────────────────────────────────────────
+6. 실습: MonitoringInterceptor
+────────────────────────────────────────
+
+■ 목적
+  - URL 요청 처리 시간(소요 시간)을 로그로 기록
+
+■ 처리 흐름
+  preHandle       → 처리 시작 시간 기록, StopWatch 시작
+  postHandle      → 처리 종료 시간 기록
+  afterCompletion → StopWatch 정지 후 총 소요 시간(ms) 기록
+
+■ ThreadLocal 사용 이유
+  - 멀티 스레드 환경에서 스레드별로 독립적인 StopWatch 인스턴스 유지
+  - ThreadLocal<StopWatch> stopWatchLocal = new ThreadLocal<StopWatch>();
+  - preHandle에서 set(), afterCompletion에서 get() / set(null)로 정리
+
+■ 핵심 코드 구조
+  public class MonitoringInterceptor implements HandlerInterceptor {
+      private final Logger log = LoggerFactory.getLogger(MonitoringInterceptor.class);
+      ThreadLocal<StopWatch> stopWatchLocal = new ThreadLocal<StopWatch>();
+
+      @Override
+      public boolean preHandle(...) {
+          StopWatch sw = new StopWatch();
+          sw.start();
+          stopWatchLocal.set(sw);
+          log.info("접근한 URL: {}", getURLPath(request));
+          log.info("요청 처리 시작 시간: {}", getCurrentTime());
+          return true;
+      }
+
+      @Override
+      public void postHandle(...) {
+          log.info("요청 처리 종료 시간: {}", getCurrentTime());
+      }
+
+      @Override
+      public void afterCompletion(...) {
+          StopWatch sw = stopWatchLocal.get();
+          sw.stop();
+          log.info("요청 처리 소요 시간: {} ms", sw.getTotalTimeMillis());
+          stopWatchLocal.set(null);
+      }
+  }
+
+────────────────────────────────────────
+7. java.lang.ThreadLocal 정리
+────────────────────────────────────────
+
+  - 스레드별로 고유한 로컬 변수를 제공
+  - get() / set() 으로 스레드 고유의 값 접근
+  - 객체에 귀속되는 것이 아닌 스레드에 귀속된 변수
+  - 일반적으로 private static final 로 선언하여 사용
+
+========================================
+  끝
+========================================
