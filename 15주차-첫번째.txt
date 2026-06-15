@@ -1,0 +1,156 @@
+-- 1. parent_id 컬럼 추가 (이미 있으면 무시)
+ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES messages(id) ON DELETE CASCADE;
+
+-- 2. get_nearby_messages: return type 변경을 위해 기존 함수 먼저 삭제
+DROP FUNCTION IF EXISTS get_nearby_messages(FLOAT8, FLOAT8, FLOAT8, TEXT);
+
+CREATE FUNCTION get_nearby_messages(
+  lat             FLOAT8,
+  lng             FLOAT8,
+  radius_m        FLOAT8 DEFAULT 500,
+  filter_category TEXT   DEFAULT NULL
+)
+RETURNS TABLE(
+  id             UUID,
+  sender_id      UUID,
+  content        TEXT,
+  latitude       FLOAT8,
+  longitude      FLOAT8,
+  altitude       FLOAT8,
+  category       TEXT,
+  echo_count     INTEGER,
+  reporter_count INTEGER,
+  created_at     TIMESTAMPTZ,
+  expires_at     TIMESTAMPTZ,
+  parent_id      UUID
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.id,
+    m.sender_id,
+    m.content,
+    ST_Y(m.location::GEOMETRY)::FLOAT8 AS latitude,
+    ST_X(m.location::GEOMETRY)::FLOAT8 AS longitude,
+    m.altitude,
+    m.category,
+    m.echo_count,
+    m.reporter_count,
+    m.created_at,
+    m.expires_at,
+    m.parent_id
+  FROM messages m
+  WHERE ST_DWithin(
+    m.location,
+    ST_SetSRID(ST_MakePoint(lng, lat), 4326)::GEOGRAPHY,
+    radius_m
+  )
+  AND m.reporter_count < 5
+  AND m.expires_at > NOW()
+  AND m.parent_id IS NULL
+  AND (filter_category IS NULL OR m.category = filter_category)
+  ORDER BY m.created_at DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- get_my_messages
+CREATE OR REPLACE FUNCTION get_my_messages(p_user_id UUID)
+RETURNS TABLE(
+  id             UUID,
+  sender_id      UUID,
+  content        TEXT,
+  latitude       FLOAT8,
+  longitude      FLOAT8,
+  altitude       FLOAT8,
+  category       TEXT,
+  echo_count     INTEGER,
+  reporter_count INTEGER,
+  created_at     TIMESTAMPTZ,
+  expires_at     TIMESTAMPTZ,
+  parent_id      UUID
+) LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.id,
+    m.sender_id,
+    m.content,
+    ST_Y(m.location::GEOMETRY)::FLOAT8 AS latitude,
+    ST_X(m.location::GEOMETRY)::FLOAT8 AS longitude,
+    m.altitude,
+    m.category,
+    m.echo_count,
+    m.reporter_count,
+    m.created_at,
+    m.expires_at,
+    m.parent_id
+  FROM messages m
+  WHERE m.sender_id = p_user_id
+  ORDER BY m.created_at DESC;
+END;
+$$;
+
+-- get_replies
+CREATE OR REPLACE FUNCTION get_replies(p_parent_id UUID)
+RETURNS TABLE(
+  id             UUID,
+  sender_id      UUID,
+  content        TEXT,
+  latitude       FLOAT8,
+  longitude      FLOAT8,
+  altitude       FLOAT8,
+  category       TEXT,
+  echo_count     INTEGER,
+  reporter_count INTEGER,
+  created_at     TIMESTAMPTZ,
+  expires_at     TIMESTAMPTZ,
+  parent_id      UUID
+) LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.id,
+    m.sender_id,
+    m.content,
+    ST_Y(m.location::GEOMETRY)::FLOAT8 AS latitude,
+    ST_X(m.location::GEOMETRY)::FLOAT8 AS longitude,
+    m.altitude,
+    m.category,
+    m.echo_count,
+    m.reporter_count,
+    m.created_at,
+    m.expires_at,
+    m.parent_id
+  FROM messages m
+  WHERE m.parent_id = p_parent_id
+    AND m.reporter_count < 5
+    AND m.expires_at > NOW()
+  ORDER BY m.created_at ASC;
+END;
+$$;
+
+-- get_safe_zones
+CREATE OR REPLACE FUNCTION get_safe_zones(p_user_id UUID)
+RETURNS TABLE(
+  id        UUID,
+  user_id   UUID,
+  latitude  FLOAT8,
+  longitude FLOAT8,
+  radius_m  FLOAT8,
+  label     TEXT
+) LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    sz.id,
+    sz.user_id,
+    ST_Y(sz.location::GEOMETRY)::FLOAT8 AS latitude,
+    ST_X(sz.location::GEOMETRY)::FLOAT8 AS longitude,
+    sz.radius_m,
+    sz.label
+  FROM safe_zones sz
+  WHERE sz.user_id = p_user_id
+  ORDER BY sz.id;
+END;
+$$;
