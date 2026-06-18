@@ -1,0 +1,164 @@
+========================================
+  웹자바프로그래밍응용 - 예외 처리 총정리
+  (기말 대비 / 찝은 페이지: 5p·12p·17p·18p·27p)
+========================================
+
+
+■■■ ⭐ 0. 최우선 암기: 예외 처리 우선순위 (5p) ⭐ ■■■
+
+예외 발생 시 스프링이 처리할 핸들러를 찾는 순서:
+
+  1순위) Controller에 적용된  @ExceptionHandler
+  2순위) 공통 적용된          @ControllerAdvice
+  3순위) Exception에 적용된    @ResponseStatus
+
+🧠 암기법: "좁고 구체적 → 공통 → 예외 자체"
+   = 컨트롤러 개별 > 전역 공통 > 예외 클래스
+   (적용 범위가 좁을수록 먼저 이긴다)
+
+
+----------------------------------------
+■ 1. 어노테이션 3종 정리 (5p)
+----------------------------------------
+
+[@ResponseStatus]
+ - 역할 : 가장 간단. 발생한 예외를 HTTP 상태 코드로 매핑해서 응답
+ - 적용 : Exception, Controller
+
+[@ExceptionHandler]
+ - 역할 : 컨트롤러 내부 요청처리 메서드에서 발생한 예외를
+          직접 처리하는 "메서드"에 선언
+ - 적용 : Controller
+
+[@ControllerAdvice]
+ - 역할 : 여러 컨트롤러에서 발생하는 예외를 공통으로 처리하는
+          "클래스"에 선언
+ - 적용 : 외부 클래스
+
+
+----------------------------------------
+■ 2. Exception에 @ResponseStatus 적용 (12p)
+----------------------------------------
+
+예외 클래스 자체에 @ResponseStatus를 붙이면,
+그 예외가 던져질 때 지정한 HTTP 상태 코드로 응답됨.
+
+  @ResponseStatus(value=HttpStatus.NOT_FOUND, reason="찾을 수 없습니다")
+  public class Example02Exception extends Exception {
+      public Example02Exception(String message) {
+          super(message);              // 부모 생성자에 메시지 전달
+          System.out.print(message);
+      }
+  }
+
+  @Controller
+  public class Example02Controller {
+      @GetMapping("/exam02")
+      public void handleRequest() throws Exception {
+          throw new Example02Exception("...");  // 던지기만 하면 됨
+      }
+  }
+
+⭐ 포인트
+ - value=HttpStatus.NOT_FOUND  →  HTTP 404
+ - reason="..."               →  응답에 표시될 이유 메시지
+ - extends Exception (또는 RuntimeException)
+ - super(message) 로 부모에 메시지 전달
+ - 조건: "Exception 클래스에 어노테이션을 등록할 수 있을 때 사용 가능"
+
+🧠 코드 암기:  NOT_FOUND=404 / BAD_REQUEST=400 / INTERNAL_SERVER_ERROR=500
+
+
+----------------------------------------
+■ 3. @ExceptionHandler 개요 (17p)
+----------------------------------------
+
+컨트롤러의 요청 처리 메서드 실행 중 발생한 예외를
+처리하는 "예외 처리 메서드"에 선언.
+
+ [요소(element)]
+  - 이름 : value
+  - 타입 : Class<? extends Throwable>[]
+  - 설명 : 그 메서드가 처리할 "예외 클래스 목록"
+
+⭐ 포인트
+ - 타입 끝에 [] (배열) → 여러 예외를 한 번에 지정 가능
+ - ? extends Throwable → Throwable 상속한 클래스만 가능
+ - 적용 위치: 메서드 (컨트롤러 단위 동작)
+
+
+----------------------------------------
+■ 4. @ExceptionHandler 적용 예제 (18p)
+----------------------------------------
+
+  @Controller
+  public class Example03Controller {
+
+      @GetMapping("/exam03")
+      public void handleRequest() {
+          throw new Example03Exception();
+      }
+
+      @ExceptionHandler(Example03Exception.class)
+      public ModelAndView handleException(Example03Exception ex) {
+          ModelAndView model = new ModelAndView();
+          model.addObject("errorMassage", ex.getErrMsg());
+          model.addObject("exception", ex);
+          model.setViewName("webpage10_03");
+          return model;
+      }
+  }
+
+⭐ 포인트
+ - @ExceptionHandler(예외.class) 메서드가 그 예외를 잡음
+ - 반환 타입: ModelAndView
+ - addObject("키", 값)   → 뷰에 데이터 전달
+ - setViewName("뷰이름") → 보여줄 에러 뷰 지정
+
+
+----------------------------------------
+■ 5. @ControllerAdvice 전역 예외 처리 (27p)
+----------------------------------------
+
+하나가 아닌 "여러 컨트롤러"에서 발생하는 예외를
+공통(전역)으로 처리.
+
+  @ControllerAdvice(basePackages={"com.springmvc"})
+  public class Example04ExceptionHandler {
+
+      @ExceptionHandler(value={RuntimeException.class})
+      private ModelAndView handleErrorMethod(Exception ex) {
+          ModelAndView modelAndView = new ModelAndView();
+          modelAndView.addObject("errorMassage", "...");
+          modelAndView.addObject("exception", ex);
+          modelAndView.setViewName("webpage10_03");
+          return modelAndView;
+      }
+  }
+
+⭐ 포인트
+ - @ControllerAdvice 는 "클래스"에 붙음
+ - basePackages={"..."} → 개입할 컨트롤러의 패키지 지정
+   (value = basePackages 의 별칭)
+ - 내부에 @ExceptionHandler 메서드를 둬서 공통 처리
+ - 여러 컨트롤러의 예외를 한 곳에서 잡는다는 게 핵심
+
+ [@ControllerAdvice 주요 요소]
+  - annotations         : 개입할 컨트롤러를 식별할 어노테이션 목록
+  - assignableTypes     : 할당 가능한 타입의 컨트롤러에 개입
+  - basePackageClasses  : 타입 안전한 패키지 지정
+  - basePackages        : 개입할 컨트롤러의 패키지 지정
+  - value               : basePackages 의 별칭
+
+
+========================================
+  ⭐ 시험 직전 1분 체크 ⭐
+========================================
+ 1) 우선순위: ExceptionHandler > ControllerAdvice > ResponseStatus
+ 2) ResponseStatus = HTTP 상태코드 매핑 (NOT_FOUND=404)
+ 3) ExceptionHandler = 컨트롤러 내 "메서드", value 타입은 배열[]
+ 4) ControllerAdvice = 여러 컨트롤러 공통 처리하는 "클래스"
+ 5) 핸들러 메서드는 ModelAndView 반환 → addObject + setViewName
+
+  화이팅! 🔥
+========================================
