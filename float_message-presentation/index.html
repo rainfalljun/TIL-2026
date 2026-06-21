@@ -146,36 +146,38 @@
   <!-- ── 2. 문제 정의 ── -->
   <div class="slide">
     <div class="eyebrow">Problem Definition — 문제 정의</div>
-    <div class="hero" style="font-size:clamp(2.2rem,4.2vw,3.4rem);margin-bottom:20px">기존 SNS는 <em>장소 맥락</em>을 잃는다</div>
-    <div class="compare">
-      <div class="compare-col">
-        <div class="col-label">기존 SNS</div>
-        <div class="col-name">Instagram / X</div>
-        <ul>
-          <li>전 세계 누구나 볼 수 있음</li>
-          <li>장소 정보는 태그일 뿐</li>
-          <li>게시물이 영구 보존됨</li>
-          <li>팔로워 관계 필요</li>
+    <div class="hero" style="font-size:clamp(2.0rem,3.8vw,3.0rem);margin-bottom:16px">
+      지금 여기, <em>이 자리에 있는 사람</em>만 아는 정보
+    </div>
+    <div class="card-row col3" style="margin-top:0">
+      <div class="card">
+        <div class="card-keyword">☕ 카페에서</div>
+        <div class="card-desc" style="font-size:0.95rem;line-height:1.8">"와이파이 비번이 뭐예요?" "3번 테이블 충전기 있어요" — <strong style="color:#fff">지금 이 공간에 있는 사람만</strong> 필요한 정보</div>
+      </div>
+      <div class="card">
+        <div class="card-keyword">🚇 길 위에서</div>
+        <div class="card-desc" style="font-size:0.95rem;line-height:1.8">"역 앞 집회로 버스 우회해요" "이 줄 30분 기다렸어요" — <strong style="color:#fff">지금 이 근처에 있어야</strong> 의미 있는 정보</div>
+      </div>
+      <div class="card">
+        <div class="card-keyword">🏫 캠퍼스에서</div>
+        <div class="card-desc" style="font-size:0.95rem;line-height:1.8">"3층 화장실 공사 중" "오늘 이 강의실 에어컨 고장" — <strong style="color:#fff">24시간 후엔 쓸모없어지는</strong> 현장 정보</div>
+      </div>
+    </div>
+    <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="padding:16px 20px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.22);border-radius:10px">
+        <div style="font-size:0.73rem;letter-spacing:0.12em;text-transform:uppercase;color:#f87171;margin-bottom:8px;font-family:'Segoe UI',sans-serif">기존 수단의 한계</div>
+        <ul class="bullet-list">
+          <li>SNS — 팔로워 없이는 전달 불가, 모르는 사람에겐 노이즈</li>
+          <li>단톡방 — 맥락 없는 사람들에게도 함께 전송됨</li>
+          <li>직접 말 걸기 — 익명성 없음, 심리적 장벽 높음</li>
         </ul>
       </div>
-      <div class="compare-col">
-        <div class="col-label">기존 위치 서비스</div>
-        <div class="col-name">Google Maps 리뷰</div>
-        <ul>
-          <li>공식 장소에만 리뷰 가능</li>
-          <li>실시간 대화 불가</li>
-          <li>반경 내 익명 공유 없음</li>
-          <li>Firebase: 반경 쿼리 미지원</li>
-        </ul>
-      </div>
-      <div class="compare-col hl">
-        <div class="col-label">float_message</div>
-        <div class="col-name">위치 + 시간 제약</div>
-        <ul>
-          <li>반경 500m 이내만 접근 가능</li>
-          <li>GPS가 곧 인증 — 가입 불필요</li>
-          <li>24시간 후 자동 소멸</li>
-          <li>PostGIS ST_DWithin 공간 쿼리</li>
+      <div style="padding:16px 20px;background:rgba(200,169,110,0.07);border:1px solid rgba(200,169,110,0.28);border-radius:10px">
+        <div style="font-size:0.73rem;letter-spacing:0.12em;text-transform:uppercase;color:#c8a96e;margin-bottom:8px;font-family:'Segoe UI',sans-serif">float_message의 접근</div>
+        <ul class="bullet-list">
+          <li>GPS가 곧 인증 — 이 자리에 있어야만 메시지가 보임</li>
+          <li>24h 자동 소멸 — 정보가 낡아도 스스로 사라짐</li>
+          <li>익명 + 반경 500m — 심리적 부담 없는 현장 소통</li>
         </ul>
       </div>
     </div>
