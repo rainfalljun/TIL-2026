@@ -1,0 +1,30 @@
+데이터베이스 연동 학습 자료 요약 정리
+
+1. 로깅 기능 설정 (Log4j & Slf4j)
+
+- [cite_start]Log4j (Log for Java): 아파치 소프트웨어 라이선스에 따라 배포되는 로깅 프레임워크로, Java로 작성되어 안정적이고 신속하며 유연합니다[cite: 11, 12].
+- [cite_start]시스템 성능에 큰 영향을 미치지 않으면서 선택적인 로그 기록 등 다양한 기능을 제공합니다[cite: 13].
+- [cite_start]로깅 레벨 심각도: TRACE < DEBUG < INFO < WARN < ERROR < FATAL 순으로 구성됩니다[cite: 33].
+- [cite_start]Slf4j (Simple Logging Facade for Java): log4j, logback 등 다양한 로깅 프레임워크에 대한 추상화 API를 제공하며, 스프링의 기본 로깅 API로 사용됩니다[cite: 65, 67, 69].
+
+2. H2 데이터베이스 및 Spring JDBC 개요
+
+- [cite_start]H2 데이터베이스: Java로 개발된 관계형 데이터베이스(RDBMS)로, 매우 빠르고 내장 DB 및 서버 모드를 지원하며 브라우저 기반 콘솔을 제공합니다[cite: 86, 89, 92, 93].
+- [cite_start]Spring JDBC: JDBC 추상화를 제공하는 Spring Framework의 모듈로, 데이터베이스 공급업체별 오류 코드를 분석하고 코드를 단순화하는 계층을 제공합니다[cite: 104, 122].
+- [cite_start]종속성 추가: 프로젝트의 pom.xml에 h2와 spring-jdbc 라이브러리를 추가해야 연동이 가능합니다[cite: 109, 110].
+
+3. 환경 설정 주요 파일 및 경로
+
+- [cite_start]src/main/resources/db.properties: 데이터베이스 접속을 위한 드라이버명, URL, 계정 아이디, 비밀번호 정보를 설정합니다[cite: 130, 143].
+- [cite_start]src/main/resources/db/create-db.sql: 테이블 생성 스크립트를 관리합니다[cite: 131, 152].
+- [cite_start]src/main/resources/db/insert-data.sql: 초기 데이터 삽입 스크립트를 관리합니다[cite: 131, 163].
+- [cite_start]root-context.xml: db.properties를 로드하고, 이를 바탕으로 DataSource를 생성하며 데이터베이스 초기화를 설정합니다[cite: 132, 176, 177, 178].
+- [cite_start]servlet-context.xml: SQL 실행을 도와주는 JdbcTemplate을 설정합니다[cite: 137, 264].
+- [cite_start]web.xml: 브라우저에서 DB를 확인할 수 있는 H2Console 서블릿을 설정합니다[cite: 138, 139].
+
+4. 데이터 조회 및 테스트 방법
+
+- [cite_start]RowMapper: ResultSet의 각 행을 자바 객체에 매핑하는 인터페이스입니다[cite: 327, 328].
+- [cite_start]BeanPropertyRowMapper: Java Beans 규약을 준수할 경우 RowMapper를 직접 구현하지 않고 자동으로 생성해주는 클래스입니다[cite: 343, 345].
+- [cite_start]BookRepositoryImpl: JdbcTemplate.query() 메소드를 사용하여 SQL을 실행하고 도서 목록을 List 형태로 반환합니다[cite: 386, 388].
+- [cite_start]실행 확인: Tomcat 서버 시작 후 http://localhost:8080/books 호출을 통해 데이터가 정상적으로 조회되는지 확인합니다[cite: 394, 396].

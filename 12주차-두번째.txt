@@ -1,0 +1,137 @@
+========================================
+  Spring Web MVC - 예외 처리 요약
+  웹자바프로그래밍응용 | 컴퓨터소프트웨어과
+========================================
+
+## 1. 예외 처리(Exception Handling) 개요
+
+- 예외(Exception): 프로그램 실행 중 발생하는 오류 또는 예상치 못한 사건
+  · 코딩 오류, 시스템 오작동, 존재하지 않는 데이터 접근, 수치 오버플로/언더플로 등
+
+- 예외 처리의 목적
+  · 예외 상황에 대비한 코드를 작성하여 프로그램의 비정상 종료 방지
+  · 웹 애플리케이션의 안정성 확보를 위한 필수 구현 요건
+
+
+## 2. Spring Web MVC 예외 처리 어노테이션 종류
+
+┌───────────────────┬──────────────────────────────────────────┬──────────────┐
+│ 어노테이션         │ 설명                                      │ 적용 대상    │
+├───────────────────┼──────────────────────────────────────────┼──────────────┤
+│ @ResponseStatus   │ 예외를 HTTP 상태 코드로 매핑하여 응답     │ Exception    │
+│                   │                                           │ Controller   │
+├───────────────────┼──────────────────────────────────────────┼──────────────┤
+│ @ExceptionHandler │ 컨트롤러 내부에서 발생한 예외를           │ Controller   │
+│                   │ 직접 처리하는 메소드에 선언               │              │
+├───────────────────┼──────────────────────────────────────────┼──────────────┤
+│ @ControllerAdvice │ 여러 컨트롤러에서 발생하는 예외를         │ 외부 클래스  │
+│                   │ 공통으로 처리하는 클래스에 선언           │              │
+└───────────────────┴──────────────────────────────────────────┴──────────────┘
+
+※ 우선순위
+  1순위: Controller에 적용된 @ExceptionHandler
+  2순위: 공통적으로 적용된 @ControllerAdvice
+  3순위: Exception에 적용된 @ResponseStatus
+
+
+## 3. HTTP 상태 코드 개요
+
+- HTTP 상태 코드: 클라이언트 요청을 서버에서 처리한 결과를 코드로 표현한 응답 정보
+
+[주요 상태 코드]
+  200 OK                  - 요청 성공
+  301 Moved Permanently   - 리소스 URI 변경됨
+  400 Bad Request         - 일반적인 요청 실패
+  401 Unauthorized        - 인증되지 않은 사용자의 접근
+  403 Forbidden           - 접근이 허용되지 않는 자원 접근
+  404 Not Found           - 요청 URL에 해당하는 자원 없음
+  405 Method Not Allowed  - 지원되지 않는 HTTP Method 요청
+  500 Internal Server Error - 서버 내부 오류
+
+
+## 4. @ResponseStatus를 이용한 예외 처리
+
+- 역할: 예외 발생 시 지정된 HTTP 상태 코드를 웹 브라우저에 전달
+- 처리 객체: ResponseStatusExceptionResolver (DispatcherServlet에 기본 등록)
+
+[주요 속성]
+  · value / code : 응답에 사용할 HttpStatus 상태 코드
+  · reason       : 응답에 포함할 이유 메시지(문자열)
+
+[예외 클래스에 적용 예]
+  @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "요청한 도서 분야를 찾을 수 없습니다.")
+  public class CategoryException extends RuntimeException { ... }
+
+[실습 흐름]
+  1. CategoryException 클래스 생성 후 @ResponseStatus 적용
+  2. BookController의 requestBooksByCategory() 메소드에서
+     카테고리 조회 결과가 없으면 CategoryException throw
+  3. 결과: HTTP 404 상태 코드와 메시지 응답
+
+
+## 5. @ExceptionHandler를 이용한 예외 처리
+
+- 역할: 컨트롤러 내 요청 처리 메소드에서 발생한 예외를 해당 컨트롤러 안에서 직접 처리
+- 적용 위치: Controller 클래스 내부 메소드
+
+[주요 속성]
+  · value : 처리할 예외 클래스 목록 (Class<? extends Throwable>[])
+
+[실습 흐름]
+  1. BookIdException 클래스 생성
+  2. BookRepositoryImpl의 getBookById()에서 도서 없을 시 BookIdException throw
+  3. BookController에 @ExceptionHandler(BookIdException.class) 메소드 추가
+     → ModelAndView에 오류 정보 담아 errorBook 뷰로 반환
+  4. errorBook.jsp 생성하여 사용자 친화적인 오류 화면 출력
+
+[코드 예]
+  @ExceptionHandler(value = {BookIdException.class})
+  public ModelAndView handlerException(HttpServletRequest req, BookIdException exception) {
+      ModelAndView mav = new ModelAndView();
+      mav.addObject("invalidBookId", exception.getBookId());
+      mav.setViewName("errorBook");
+      return mav;
+  }
+
+
+## 6. @ControllerAdvice를 이용한 전역 예외 처리
+
+- 역할: 여러 컨트롤러에서 발생하는 예외를 하나의 클래스에서 공통 처리
+- 적용 위치: 별도의 외부 클래스 (컨트롤러 외부)
+
+[주요 속성]
+  · basePackages      : 개입할 컨트롤러의 패키지 지정
+  · basePackageClasses: 타입 안전한 패키지 지정
+  · assignableTypes   : 개입할 컨트롤러 타입 지정
+  · annotations       : 개입할 컨트롤러를 식별할 어노테이션 지정
+
+[실습 흐름]
+  1. CommonExceptionAdvice 클래스 생성 후 @ControllerAdvice 적용
+  2. RuntimeException을 처리하는 @ExceptionHandler 메소드 작성
+     → errorCommon 뷰로 반환
+  3. errorCommon.jsp 생성하여 공통 오류 화면 출력
+
+[코드 예]
+  @ControllerAdvice
+  public class CommonExceptionAdvice {
+      @ExceptionHandler(RuntimeException.class)
+      private ModelAndView handleExceptionCommon(Exception e) {
+          ModelAndView mav = new ModelAndView();
+          mav.addObject("exception", e);
+          mav.setViewName("errorCommon");
+          return mav;
+      }
+  }
+
+
+## 7. 핵심 정리
+
+┌──────────────────────────────────────────────────────────────┐
+│  상황                          │  권장 방법                   │
+├──────────────────────────────────────────────────────────────┤
+│  특정 예외 → HTTP 상태 코드     │  @ResponseStatus             │
+│  컨트롤러 내 특정 예외 처리     │  @ExceptionHandler           │
+│  여러 컨트롤러의 공통 예외 처리 │  @ControllerAdvice           │
+└──────────────────────────────────────────────────────────────┘
+
+========================================

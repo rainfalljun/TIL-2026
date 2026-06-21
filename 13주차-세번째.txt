@@ -1,0 +1,110 @@
+========================================
+  AWS Lambda Layer 요약 정리
+========================================
+
+----------------------------------------
+1. Lambda Layer란?
+----------------------------------------
+- AWS Lambda는 기본적으로 외부 Python 라이브러리(pandas, selenium, emoji 등)를
+  사용할 수 없음
+- PC에서는 pip install로 설치하면 되지만, Lambda 환경에서는 별도 설정 필요
+- Layer 없이 외부 라이브러리를 import하면 아래와 같은 에러 발생:
+    Runtime.ImportModuleError: No module named 'xxx'
+- Lambda Layer = 외부 라이브러리를 패키징하여 Lambda 함수에 추가하는 기능
+
+----------------------------------------
+2. Lambda Layer 생성 절차 (실습: emoji 라이브러리)
+----------------------------------------
+
+[Step 1] 실습 PC에서 라이브러리 설치
+  - 디렉토리 생성 예) D:\aws_3c\python
+  - Python 3.13 설치 확인 (버전이 다를 경우 3.13 새로 설치, PATH 체크 필수)
+  - CMD에서 해당 경로로 이동 후 아래 명령어 실행:
+      py -3.13 -m pip install emoji -t python/
+  - python/ 폴더 안에 emoji 관련 파일들이 설치됨
+
+[Step 2] zip 파일 압축
+  - python 디렉토리를 zip으로 압축 → python.zip 생성
+  - 파일명은 반드시 python.zip (폴더명 python이 내부에 포함된 구조여야 함)
+
+[Step 3] AWS 콘솔에서 Layer 생성
+  - Lambda → 추가 리소스 → 계층 → 계층 생성
+  - 이름: sgu-계정-layer
+  - 설명: emoji install
+  - .zip 파일 업로드 선택 후 python.zip 업로드
+  - 호환 런타임: Python 3.13 선택
+  - 생성 버튼 클릭
+
+----------------------------------------
+3. Lambda 함수에 Layer 적용
+----------------------------------------
+  1) Lambda 함수 페이지에서 하단의 [Layers] 클릭
+  2) [Add a layer] 버튼 클릭
+  3) 계층 소스: 사용자 지정 계층 선택
+  4) 생성한 레이어(sgu-계정-layer) 선택 → 버전 1 선택 → 추가
+
+----------------------------------------
+4. 테스트 결과
+----------------------------------------
+- 레이어 적용 후 아래 코드 실행 시 정상 작동:
+
+    import emoji
+    def lambda_handler(event, context):
+        text = "AWS Lambda is awesome! :rocket:"
+        result = emoji.emojize(text, language='alias')
+        return {'statusCode': 200, 'body': result}
+
+- 결과: {"statusCode": 200, "body": "AWS Lambda is awesome! 🚀"}
+
+----------------------------------------
+5. 라이브러리 추가 (버전 업)
+----------------------------------------
+- 새 라이브러리를 추가하고 싶다면 동일한 python/ 경로에 추가 설치 후 다시 zip 생성
+    예) py -3.13 -m pip install requests -t python/
+- 기존 레이어에서 [버전 생성] 버튼으로 새 버전 업로드
+- Lambda 함수에서 레이어 버전을 최신 버전으로 변경
+
+----------------------------------------
+6. requests 라이브러리 실습
+----------------------------------------
+
+[requests란?]
+- Python용 HTTP 라이브러리
+- GET, POST, PUT, DELETE 등 HTTP 요청을 쉽게 보낼 수 있음
+- 테스트 API: https://httpbin.org
+
+[실습 1 - GET 요청]
+    import requests
+    def lambda_handler(event, context):
+        url = "https://httpbin.org/get"
+        response = requests.get(url)
+        data = response.json()
+        return {'statusCode': 200, 'body': str(data)}
+
+[실습 2 - POST 요청]
+    import requests, json
+    def lambda_handler(event, context):
+        url = "https://httpbin.org/post"
+        payload = {"name": "test"}
+        response = requests.post(url, json=payload)
+        data = response.json()
+        return {'statusCode': 200, 'body': str(data)}
+
+[POST 요청 핵심 개념]
+  - payload = {"name": "test"} : POST Body에 담을 JSON 데이터
+  - json=payload : 딕셔너리를 JSON 문자열로 자동 직렬화하여 전송
+    → Content-Type: application/json 헤더 자동 설정
+  - response.json() : 응답 Body(JSON)를 Python 딕셔너리로 변환
+  - AWS API Gateway는 주로 POST 방식 사용
+    (이유: JSON Body로 구조화된 데이터 전달에 유리)
+
+========================================
+  정리
+========================================
+Lambda Layer 전체 흐름:
+  PC에서 라이브러리 설치
+  → python/ 폴더 zip 압축
+  → AWS 콘솔에서 Layer 생성 (zip 업로드)
+  → Lambda 함수에 Layer 추가
+  → 테스트 실행
+========================================
