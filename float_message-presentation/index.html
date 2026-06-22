@@ -122,7 +122,7 @@
 <body>
 
 <div class="watermark">float_message</div>
-<div class="slide-num" id="slideNum">1 / 12</div>
+<div class="slide-num" id="slideNum">1 / 11</div>
 <div class="timer" id="timer" title="클릭 → 타이머 시작 / 다시 클릭 → 정지&amp;리셋">⏱ 0:00</div>
 
 <div class="deck" id="deck">
@@ -429,40 +429,7 @@ content (24자 truncate)<br/>
     </div>
   </div>
 
-  <!-- ── 9. 시행착오 (ADR 기록 기반) ── -->
-  <div class="slide">
-    <div class="eyebrow">Trial &amp; Error · ADR — 결정을 뒤집은 순간들</div>
-    <div class="hero" style="font-size:clamp(2.3rem,3.7vw,3.2rem);margin-bottom:6px">처음 선택 → 문제 발견 → <em>최종 결정</em></div>
-    <div style="font-size:1.05rem;color:#a89880;font-family:'Segoe UI',sans-serif;margin-bottom:14px">모든 전환을 ADR(아키텍처 의사결정 기록) 문서로 남겼습니다</div>
-    <div class="issue-list">
-      <div class="issue-item">
-        <div class="issue-before">🔍 GEOMETRY 평면 좌표로 시작<br/><span style="font-size:0.88rem;opacity:.85">ST_DWithin 단위가 '도(degree)' — 서울 위도 37°에서 500m 환산값이 위도마다 달라짐</span></div>
-        <div class="issue-arrow">→</div>
-        <div class="issue-after"><span style="display:inline-block;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;color:#1e1c1a;background:#c8a96e;padding:2px 8px;border-radius:4px;margin-right:6px;font-family:'Segoe UI',sans-serif">ADR-4</span>GEOGRAPHY 타입 전환<br/><span style="font-size:0.88rem;opacity:.85">구면 지구 기준 → ST_DWithin에 500 = 정확히 500m</span></div>
-      </div>
-      <div class="issue-item">
-        <div class="issue-before">🔍 AR 전용 라이브러리 도입 검토<br/><span style="font-size:0.88rem;opacity:.85">arcore는 Android 전용 · ar_flutter_plugin은 2년째 유지보수 중단</span></div>
-        <div class="issue-arrow">→</div>
-        <div class="issue-after"><span style="display:inline-block;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;color:#1e1c1a;background:#c8a96e;padding:2px 8px;border-radius:4px;margin-right:6px;font-family:'Segoe UI',sans-serif">ADR-6</span>CustomPainter 직접 구현<br/><span style="font-size:0.88rem;opacity:.85">나침반 + 하버사인 ~50줄 · iOS도 동작 · APK 경량화</span></div>
-      </div>
-      <div class="issue-item">
-        <div class="issue-before">🔍 고정 distanceFilter 10m 방식<br/><span style="font-size:0.88rem;opacity:.85">정지 상태에서도 GPS 칩 상시 동작 → 카페·강의실 장기 체류 시 배터리 소모</span></div>
-        <div class="issue-arrow">→</div>
-        <div class="issue-after"><span style="display:inline-block;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;color:#1e1c1a;background:#c8a96e;padding:2px 8px;border-radius:4px;margin-right:6px;font-family:'Segoe UI',sans-serif">ADR-7</span>속도 기반 동적 샘플링<br/><span style="font-size:0.88rem;opacity:.85">정지 60초 / 이동 즉시 — 단일 스트림에서 speed로 분기</span></div>
-      </div>
-      <div class="issue-item">
-        <div class="issue-before">🔍 RLS UPDATE 정책 개방 검토<br/><span style="font-size:0.88rem;opacity:.85">누구나 content·만료시각·echo_count까지 수정 가능한 보안 취약점</span></div>
-        <div class="issue-arrow">→</div>
-        <div class="issue-after"><span style="display:inline-block;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;color:#1e1c1a;background:#c8a96e;padding:2px 8px;border-radius:4px;margin-right:6px;font-family:'Segoe UI',sans-serif">ADR-8</span>SECURITY DEFINER RPC<br/><span style="font-size:0.88rem;opacity:.85">reporter_count만 원자적 +1 · 동시 신고 race condition 방지</span></div>
-      </div>
-    </div>
-    <div style="margin-top:14px;padding:14px 20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px">
-      <span style="font-size:0.82rem;letter-spacing:0.12em;text-transform:uppercase;color:#a89880;font-family:'Segoe UI',sans-serif;margin-right:10px">그 외 실기기 디버깅</span>
-      <span style="font-size:1.0rem;color:#c8d0d8;font-family:'Segoe UI',sans-serif">지도 베이지색 렌더링 → 렌더러 명시 &nbsp;·&nbsp; 익명 세션 만료 → 자동 재로그인 &nbsp;·&nbsp; DB 함수 타입 오류 → DROP 후 재생성</span>
-    </div>
-  </div>
-
-  <!-- ── 10. 개발환경 + 테스트 결과 ── -->
+  <!-- ── 9. 개발환경 + 테스트 결과 ── -->
   <div class="slide">
     <div class="eyebrow">Dev Setup &amp; Test Results — 개발환경 &amp; 테스트 결과</div>
     <div class="hero" style="font-size:clamp(2.3rem,3.7vw,3.2rem);margin-bottom:20px">개발환경 · 빌드 · <em>검증</em></div>
@@ -500,7 +467,7 @@ content (24자 truncate)<br/>
     </div>
   </div>
 
-  <!-- ── 11. 활용 방안 + 마무리 ── -->
+  <!-- ── 10. 활용 방안 + 마무리 ── -->
   <div class="slide">
     <div class="eyebrow">Use Cases &amp; Conclusion — 활용 방안 &amp; 마무리</div>
     <div class="hero" style="font-size:clamp(2.3rem,3.7vw,3.2rem);margin-bottom:18px">장소가 <em>말을 건네는</em> 순간</div>
@@ -537,7 +504,7 @@ content (24자 truncate)<br/>
     </div>
   </div>
 
-  <!-- ── 12. 시연 데모 ── -->
+  <!-- ── 11. 시연 데모 ── -->
   <div class="slide">
     <div class="eyebrow">Live Demo — 사용자 시나리오 기반 시연</div>
     <div class="hero" style="font-size:clamp(2.7rem,4.7vw,4.0rem);margin-bottom:20px">앱 시연 영상</div>
