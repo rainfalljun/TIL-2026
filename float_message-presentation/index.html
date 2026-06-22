@@ -242,10 +242,10 @@
         <div class="card-desc">GPS · 기압계 · AR 카메라를 Bridge 없이 처리<br/>ARCore 중단 → 하버사인 + CustomPainter 직접 구현<br/>Dart 3.10 / 패키지 12개</div>
       </div>
       <div class="card" style="border-top-color:#c8a96e;border-top-width:3px;background:rgba(200,169,110,0.09);box-shadow:0 0 0 1px rgba(200,169,110,0.25)">
-        <div style="margin-bottom:12px;display:flex;gap:7px;flex-wrap:wrap"><span class="adr-tag">ADR-3 백엔드</span><span class="adr-tag">ADR-4 데이터 타입</span></div>
+        <div style="margin-bottom:12px"><span class="adr-tag">ADR-3 백엔드 선택</span></div>
         <div class="card-title" style="font-size:1.65rem;margin-bottom:10px">Supabase + <span style="color:#c8a96e">PostGIS</span></div>
         <div class="card-keyword">ST_DWithin 공간 쿼리</div>
-        <div class="card-desc">Firebase는 반경 쿼리 불가 → <strong style="color:#fff">PostGIS가 DB 채택 결정타</strong><br/>GEOMETRY(도 단위 오차) → <strong style="color:#fff">GEOGRAPHY로 미터 단위 정밀 계산</strong><br/>SECURITY DEFINER RPC · RLS · 익명 Auth</div>
+        <div class="card-desc">Firebase는 반경 쿼리 불가 → <strong style="color:#fff">PostGIS가 DB 채택 결정타</strong><br/>GEOGRAPHY 타입으로 미터 단위 정밀 거리 계산<br/>SECURITY DEFINER RPC · RLS · 익명 Auth</div>
       </div>
       <div class="card">
         <div style="margin-bottom:12px"><span class="adr-tag alt">ADR-2</span></div>
