@@ -82,6 +82,8 @@
     .feature-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 22px; }
     .feature-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-top: 2px solid rgba(200,169,110,0.25); border-radius: 10px; padding: 18px 20px; }
     .feature-tag { display: inline-block; font-size: 0.82rem; font-family: 'Segoe UI', sans-serif; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #1e1c1a; background: #c8a96e; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; }
+    .adr-tag { display: inline-block; font-size: 0.82rem; font-family: 'Segoe UI', sans-serif; font-weight: 700; letter-spacing: 0.06em; color: #1e1c1a; background: #c8a96e; padding: 3px 11px; border-radius: 5px; }
+    .adr-tag.alt { color: #c8a96e; background: rgba(200,169,110,0.14); border: 1px solid rgba(200,169,110,0.4); }
     .feature-name { font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 7px; }
     .feature-desc { font-size: 1.05rem; color: #a89880; font-family: 'Segoe UI', sans-serif; line-height: 1.65; }
 
@@ -234,16 +236,19 @@
     <div class="hero" style="font-size:clamp(2.7rem,4.7vw,4.0rem);margin-bottom:28px">기술 선택의 <em>근거</em></div>
     <div class="card-row col3">
       <div class="card">
+        <div style="margin-bottom:12px"><span class="adr-tag alt">ADR-1</span></div>
         <div class="card-title" style="font-size:1.65rem;margin-bottom:10px">Flutter</div>
         <div class="card-keyword">단일 코드베이스</div>
         <div class="card-desc">GPS · 기압계 · AR 카메라를 Bridge 없이 처리<br/>ARCore 중단 → 하버사인 + CustomPainter 직접 구현<br/>Dart 3.10 / 패키지 12개</div>
       </div>
-      <div class="card">
-        <div class="card-title" style="font-size:1.65rem;margin-bottom:10px">Supabase + PostGIS</div>
+      <div class="card" style="border-top-color:#c8a96e;border-top-width:3px;background:rgba(200,169,110,0.09);box-shadow:0 0 0 1px rgba(200,169,110,0.25)">
+        <div style="margin-bottom:12px;display:flex;gap:7px;flex-wrap:wrap"><span class="adr-tag">ADR-3 백엔드</span><span class="adr-tag">ADR-4 데이터 타입</span></div>
+        <div class="card-title" style="font-size:1.65rem;margin-bottom:10px">Supabase + <span style="color:#c8a96e">PostGIS</span></div>
         <div class="card-keyword">ST_DWithin 공간 쿼리</div>
-        <div class="card-desc">Firebase는 반경 쿼리 불가<br/>GEOGRAPHY 타입으로 미터 단위 정밀 거리 계산<br/>SECURITY DEFINER RPC · RLS · 익명 Auth</div>
+        <div class="card-desc">Firebase는 반경 쿼리 불가 → <strong style="color:#fff">PostGIS가 DB 채택 결정타</strong><br/>GEOMETRY(도 단위 오차) → <strong style="color:#fff">GEOGRAPHY로 미터 단위 정밀 계산</strong><br/>SECURITY DEFINER RPC · RLS · 익명 Auth</div>
       </div>
       <div class="card">
+        <div style="margin-bottom:12px"><span class="adr-tag alt">ADR-2</span></div>
         <div class="card-title" style="font-size:1.65rem;margin-bottom:10px">Riverpod</div>
         <div class="card-keyword">AsyncValue 통합</div>
         <div class="card-desc">GPS 스트림 · 비동기 응답 · 센서를 하나로<br/>컴파일 타임 안전성 · setState 없는 전역 상태<br/>FutureProvider.family로 replies 캐싱</div>
